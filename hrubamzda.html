@@ -1,0 +1,451 @@
+<html><head><base href="https://app.gross-wage-calculator.websim.ai/"><title>Kalkulátor hrubé mzdy 2024</title>
+<style>
+:root {
+  --primary: #2c3e50;
+  --secondary: #34495e;
+  --accent: #3498db;
+  --success: #27ae60;
+  --warning: #f39c12;
+  --error: #e74c3c;
+  --light: #ecf0f1;
+  --dark: #2c3e50;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: var(--light);
+  color: var(--dark);
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+input, select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.invalid {
+  border-color: var(--error);
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: none;
+}
+
+.error-message.visible {
+  display: block;
+}
+
+.controls {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background: var(--secondary);
+  transform: translateY(-1px);
+}
+
+.results {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--light);
+  border-radius: 4px;
+  display: none;
+}
+
+.results.visible {
+  display: block;
+  animation: slideDown 0.3s ease-out;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.result-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.result-label {
+  color: var(--secondary);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.result-value {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--dark);
+}
+
+.total-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #ddd;
+}
+
+.total {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--success);
+  text-align: right;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.working-days-info {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--accent);
+  color: white;
+  border-radius: 4px;
+  font-weight: 500;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Kalkulátor hrubé mzdy 2024</h1>
+  
+  <form id="wageCalculator">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="month">Měsíc</label>
+        <select id="month" required>
+          <option value="1">Leden</option>
+          <option value="2">Únor</option>
+          <option value="3">Březen</option>
+          <option value="4">Duben</option>
+          <option value="5">Květen</option>
+          <option value="6">Červen</option>
+          <option value="7">Červenec</option>
+          <option value="8">Srpen</option>
+          <option value="9">Září</option>
+          <option value="10">Říjen</option>
+          <option value="11">Listopad</option>
+          <option value="12">Prosinec</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="shift_type">Typ směny</label>
+        <select id="shift_type" required>
+          <option value="jednosmenný">Jednosměnný provoz</option>
+          <option value="dvousmenný">Dvousměnný provoz</option>
+          <option value="třísměnný">Třísměnný provoz</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="working-days-info" id="workingDaysInfo">
+      Pracovní dny v měsíci: <span id="workingDays">0</span>
+      Fond pracovní doby: <span id="workingHours">0</span> hodin
+    </div>
+    
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="basic_wage">Základní mzda (Kč/měsíc)</label>
+        <input type="number" id="basic_wage" required min="0" step="0.01">
+        <div class="error-message" id="basic_wage_error">Zadejte platnou částku</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="avg_hourly_wage">Průměrný hodinový výdělek (Kč/hodina)</label>
+        <input type="number" id="avg_hourly_wage" required min="0" step="0.01">
+        <div class="error-message" id="avg_hourly_wage_error">Zadejte platnou částku</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="overtime_hours">Přesčasové hodiny</label>
+        <input type="number" id="overtime_hours" required min="0">
+        <div class="error-message" id="overtime_hours_error">Neplatný počet hodin</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="weekend_hours">Víkendové hodiny</label>
+        <input type="number" id="weekend_hours" required min="0">
+        <div class="error-message" id="weekend_hours_error">Neplatný počet hodin</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="holiday_hours">Hodiny ve svátek</label>
+        <input type="number" id="holiday_hours" required min="0">
+        <div class="error-message" id="holiday_hours_error">Neplatný počet hodin</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="night_hours">Noční hodiny</label>
+        <input type="number" id="night_hours" required min="0">
+        <div class="error-message" id="night_hours_error">Neplatný počet hodin</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="vacation_hours">Dovolená (hodiny)</label>
+        <input type="number" id="vacation_hours" required min="0">
+        <div class="error-message" id="vacation_hours_error">Neplatný počet hodin</div>
+      </div>
+
+      <div class="form-group">
+        <label for="hours_worked">Počet odpracovaných hodin</label>
+        <input type="number" id="hours_worked" required min="0">
+        <div class="error-message" id="hours_worked_error">Neplatný počet hodin</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="extra_bonus">Mimořádné prémie (Kč)</label>
+        <input type="number" id="extra_bonus" required min="0">
+        <div class="error-message" id="extra_bonus_error">Zadejte platnou částku</div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <button type="submit">Vypočítat mzdu</button>
+      <button type="reset">Vymazat</button>
+    </div>
+  </form>
+  
+  <div id="results" class="results">
+    <h2>Výsledky výpočtu</h2>
+    
+    <div class="result-grid">
+      <div class="result-item">
+        <div class="result-label">Základní mzda</div>
+        <div class="result-value" id="basicWageResult">0 Kč</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-label">Příplatek za přesčas</div>
+        <div class="result-value" id="overtimeResult">0 Kč</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-label">Příplatek za víkend</div>
+        <div class="result-value" id="weekendResult">0 Kč</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-label">Příplatek za svátek</div>
+        <div class="result-value" id="holidayResult">0 Kč</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-label">Příplatek za noční</div>
+        <div class="result-value" id="nightResult">0 Kč</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-label">Náhrada za dovolenou</div>
+        <div class="result-value" id="vacationResult">0 Kč</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-label">Směnový příplatek</div>
+        <div class="result-value" id="shiftBonusResult">0 Kč</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-label">Mimořádné prémie</div>
+        <div class="result-value" id="bonusResult">0 Kč</div>
+      </div>
+    </div>
+    
+    <div class="total-section">
+      <div class="total">
+        Celková hrubá mzda: <span id="totalResult">0 Kč</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SMENY = {
+  "jednosmenný": 8,
+  "dvousmenný": 7.75,
+  "třísměnný": 7.5
+};
+
+// Počty pracovních dnů v měsících 2024
+const workingDays2024 = {
+  1: 22, 2: 21, 3: 21, 4: 21, 5: 22, 6: 20,
+  7: 23, 8: 22, 9: 21, 10: 22, 11: 21, 12: 20
+};
+
+// Holidays in 2024
+const holidays2024 = [
+  '2024-01-01', '2024-03-29', '2024-04-01', '2024-05-01', 
+  '2024-05-08', '2024-07-05', '2024-07-06', '2024-09-28', 
+  '2024-10-28', '2024-11-17', '2024-12-24', '2024-12-25', '2024-12-26'
+];
+
+function updateWorkingDaysInfo() {
+  const month = parseInt(document.getElementById('month').value);
+  const shiftType = document.getElementById('shift_type').value;
+  const workingDays = workingDays2024[month];
+  const workingHours = workingDays * SMENY[shiftType];
+  
+  document.getElementById('workingDays').textContent = workingDays;
+  document.getElementById('workingHours').textContent = workingHours.toFixed(2);
+}
+
+function validateInputs() {
+  let isValid = true;
+  const inputs = ['basic_wage', 'avg_hourly_wage', 'overtime_hours', 
+                  'weekend_hours', 'holiday_hours', 'night_hours', 
+                  'vacation_hours', 'extra_bonus', 'hours_worked'];
+  
+  inputs.forEach(id => {
+    const input = document.getElementById(id);
+    const value = parseFloat(input.value);
+    const error = document.getElementById(`${id}_error`);
+    
+    if (isNaN(value) || value < 0) {
+      input.classList.add('invalid');
+      error.classList.add('visible');
+      isValid = false;
+    } else {
+      input.classList.remove('invalid');
+      error.classList.remove('visible');
+    }
+  });
+  
+  return isValid;
+}
+
+document.getElementById('month').addEventListener('change', updateWorkingDaysInfo);
+document.getElementById('shift_type').addEventListener('change', updateWorkingDaysInfo);
+
+document.getElementById('wageCalculator').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  if (!validateInputs()) return;
+  
+  // Get form values
+  const basicWage = parseFloat(document.getElementById('basic_wage').value);
+  const avgHourlyWage = parseFloat(document.getElementById('avg_hourly_wage').value);
+  const overtimeHours = parseFloat(document.getElementById('overtime_hours').value);
+  const weekendHours = parseFloat(document.getElementById('weekend_hours').value);
+  const holidayHours = parseFloat(document.getElementById('holiday_hours').value);
+  const nightHours = parseFloat(document.getElementById('night_hours').value);
+  const vacationHours = parseFloat(document.getElementById('vacation_hours').value);
+  const extraBonus = parseFloat(document.getElementById('extra_bonus').value);
+  const hoursWorked = parseFloat(document.getElementById('hours_worked').value);
+  const shiftType = document.getElementById('shift_type').value;
+  
+  // Get working days for selected month
+  const month = parseInt(document.getElementById('month').value);
+  const workingDays = workingDays2024[month];
+  const workingHours = workingDays * SMENY[shiftType];
+  
+  // Calculate base wage based on worked hours
+  const baseWage = (basicWage / workingHours) * hoursWorked;
+  
+  // Calculate components
+  const overtimePay = overtimeHours * (avgHourlyWage * 1.25);
+  const weekendBonus = weekendHours * (avgHourlyWage * 0.1);
+  const holidayPay = holidayHours * (avgHourlyWage * 1.0);
+  const nightBonus = nightHours * (avgHourlyWage * 0.1);
+  const vacationPay = vacationHours * avgHourlyWage;
+  
+  // Calculate shift bonus
+  let shiftBonus = 0;
+  if (shiftType === 'dvousmenný') {
+    shiftBonus = basicWage * 0.06;
+  } else if (shiftType === 'třísměnný') {
+    shiftBonus = basicWage * 0.08;
+  }
+  
+  // Calculate total
+  const totalGross = baseWage + overtimePay + weekendBonus + holidayPay + 
+                     nightBonus + vacationPay + extraBonus + shiftBonus;
+  
+  // Update results with formatting
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('cs-CZ', {
+      style: 'currency',
+      currency: 'CZK',
+      minimumFractionDigits: 2
+    }).format(amount);
+  }
+  
+  document.getElementById('basicWageResult').textContent = formatCurrency(baseWage);
+  document.getElementById('overtimeResult').textContent = formatCurrency(overtimePay);
+  document.getElementById('weekendResult').textContent = formatCurrency(weekendBonus);
+  document.getElementById('holidayResult').textContent = formatCurrency(holidayPay);
+  document.getElementById('nightResult').textContent = formatCurrency(nightBonus);
+  document.getElementById('vacationResult').textContent = formatCurrency(vacationPay);
+  document.getElementById('shiftBonusResult').textContent = formatCurrency(shiftBonus);
+  document.getElementById('bonusResult').textContent = formatCurrency(extraBonus);
+  document.getElementById('totalResult').textContent = formatCurrency(totalGross);
+  
+  // Show results with animation
+  document.getElementById('results').classList.add('visible');
+});
+
+// Initialize working days info
+updateWorkingDaysInfo();
+</script>
+</body></html>
